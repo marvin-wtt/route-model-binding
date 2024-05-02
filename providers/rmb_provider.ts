@@ -7,17 +7,19 @@
  * file that was distributed with this source code.
  */
 
-import type { ApplicationContract } from '@ioc:Adonis/Core/Application'
+import type { ApplicationService } from '@adonisjs/core/types'
+
+import RouteModelBindingMiddleware from '../src/rmb_middleware.js'
 
 /**
  * AdonisJS provider for registering the middleware to the container
  */
-export default class RmbProvider {
-  constructor(protected app: ApplicationContract) {}
 
-  public register() {
-    this.app.container.bind('Adonis/Addons/RmbMiddleware', () => {
-      const { RouteModelBindingMiddleware } = require('../src/middleware/route_model_binding')
+export default class RmbProvider {
+  constructor(protected app: ApplicationService) {}
+
+  register() {
+    this.app.container.singleton(RouteModelBindingMiddleware, async () => {
       return new RouteModelBindingMiddleware(this.app)
     })
   }

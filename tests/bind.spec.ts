@@ -7,8 +7,12 @@
  * file that was distributed with this source code.
  */
 
+import type { HttpContext } from '@adonisjs/core/http'
+import type { Controller } from '../src/types.js'
+
 import { test } from '@japa/runner'
-import { bind } from '../src/decorators/bind'
+
+import { bind } from '../src/decorators/bind.js'
 
 test.group('Bind decorator', () => {
   test('collect method parameter types and store on the controller', async ({ assert }) => {
@@ -16,10 +20,10 @@ test.group('Bind decorator', () => {
 
     class UsersController {
       @bind()
-      public async show(_, __: User) {}
+      async show(_: HttpContext, __: User) {}
     }
 
-    assert.deepEqual(UsersController['bindings'], { show: [User] })
+    assert.deepEqual((UsersController as Controller)['bindings'], { show: [User] })
   })
 
   test('collect method parameter from the parent class', async ({ assert }) => {
@@ -27,16 +31,16 @@ test.group('Bind decorator', () => {
 
     class BaseController {
       @bind()
-      public async show(_, __: User) {}
+      async show(_: HttpContext, __: User) {}
     }
 
     class UsersController extends BaseController {
       @bind()
-      public async update(_, __: User) {}
+      async update(_: HttpContext, __: User) {}
     }
 
-    assert.deepEqual(BaseController['bindings'], { show: [User] })
-    assert.deepEqual(UsersController['bindings'], { show: [User], update: [User] })
+    assert.deepEqual((BaseController as Controller)['bindings'], { show: [User] })
+    assert.deepEqual((UsersController as Controller)['bindings'], { show: [User], update: [User] })
   })
 
   test('collect method parameter from the multiple parent class', async ({ assert }) => {
@@ -44,21 +48,28 @@ test.group('Bind decorator', () => {
 
     class BaseController {
       @bind()
-      public async index(_, __: User) {}
+      async index(_: HttpContext, __: User) {}
     }
 
     class UserBaseController extends BaseController {
       @bind()
-      public async show(_, __: User) {}
+      async show(_: HttpContext, __: User) {}
     }
 
     class UsersController extends UserBaseController {
       @bind()
-      public async update(_, __: User) {}
+      async update(_: HttpContext, __: User) {}
     }
 
-    assert.deepEqual(BaseController['bindings'], { index: [User] })
-    assert.deepEqual(UserBaseController['bindings'], { show: [User], index: [User] })
-    assert.deepEqual(UsersController['bindings'], { show: [User], update: [User], index: [User] })
+    assert.deepEqual((BaseController as Controller)['bindings'], { index: [User] })
+    assert.deepEqual((UserBaseController as Controller)['bindings'], {
+      show: [User],
+      index: [User],
+    })
+    assert.deepEqual((UsersController as Controller)['bindings'], {
+      show: [User],
+      update: [User],
+      index: [User],
+    })
   })
 })
